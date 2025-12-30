@@ -25,7 +25,6 @@ export default function SettingsPanel({
   onTaskChange
 }: SettingsPanelProps) {
   const [whisperEndpoint, setWhisperEndpoint] = useState<string>("http://127.0.0.1:8008/transcribe");
-  const [piperEndpoint, setPiperEndpoint] = useState<string>("http://127.0.0.1:8006/tts");
 
   // Language options for different models
   const whisperLanguages = [
@@ -83,9 +82,6 @@ export default function SettingsPanel({
     setWhisperEndpoint(e.target.value);
   };
 
-  const handlePiperEndpointChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPiperEndpoint(e.target.value);
-  };
 
   const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onModelChange(e.target.value);
@@ -172,23 +168,6 @@ export default function SettingsPanel({
         </div>
       )}
 
-      {/* Piper TTS Endpoint */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          <div className="flex items-center space-x-2">
-            <Radio className="w-4 h-4" />
-            <span>Piper TTS Endpoint</span>
-          </div>
-        </label>
-        <input
-          type="text"
-          value={piperEndpoint}
-          onChange={handlePiperEndpointChange}
-          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-          placeholder="http://127.0.0.1:8006/tts"
-        />
-        <p className="text-xs text-gray-500 mt-1">URL of the Piper TTS server</p>
-      </div>
 
       {/* Language Selection */}
       <div>

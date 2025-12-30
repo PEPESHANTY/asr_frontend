@@ -140,38 +140,4 @@ export default class ApiClient {
     }
   }
 
-  // TTS methods for Piper integration
-  async synthesizeTTS(
-    text: string,
-    language: string = 'en',
-    endpoint: string = 'http://127.0.0.1:8006/tts'
-  ): Promise<ArrayBuffer> {
-    try {
-      const response = await axios.post(
-        endpoint,
-        { text, lang: language },
-        {
-          responseType: 'arraybuffer',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          timeout: 30000,
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error('TTS synthesis failed:', error);
-      throw error;
-    }
-  }
-
-  // Check if TTS endpoint is available
-  async checkTTSEndpoint(endpoint: string = 'http://127.0.0.1:8006/tts'): Promise<boolean> {
-    try {
-      const response = await axios.get(endpoint);
-      return response.status === 200;
-    } catch (error) {
-      return false;
-    }
-  }
 }

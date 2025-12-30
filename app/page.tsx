@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, Mic, Settings, Play, Download } from "lucide-react";
+import { Upload, Mic, Settings, Download } from "lucide-react";
 import ApiClient from "@/lib/api-client";
 import AudioUpload from "@/components/AudioUpload";
 import AudioRecorder from "@/components/AudioRecorder";
@@ -11,7 +11,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"upload" | "record">("upload");
   const [transcription, setTranscription] = useState<string>("");
   const [isTranscribing, setIsTranscribing] = useState<boolean>(false);
-  const [apiEndpoint, setApiEndpoint] = useState<string>("http://127.0.0.1:8000");
+  const [apiEndpoint, setApiEndpoint] = useState<string>("https://asr-model-backend.pepeshanty.store");
   const [model, setModel] = useState<string>("whisper_jax");
   const [language, setLanguage] = useState<string>("en");
   const [task, setTask] = useState<"transcribe" | "translate">("transcribe");
@@ -127,7 +127,7 @@ export default function Home() {
                 <div className="mt-8 border-t pt-8">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-800">Transcription Result</h3>
-                  <div className="flex space-x-2">
+                    <div className="flex space-x-2">
                       <button
                         className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center space-x-2"
                         onClick={() => {
