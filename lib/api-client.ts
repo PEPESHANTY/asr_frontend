@@ -3,6 +3,7 @@ import axios from 'axios';
 export interface TranscriptionOptions {
   task?: 'transcribe' | 'translate';
   language?: string;
+  model?: string;
   num_beams?: number;
   temperature?: number;
   chunk_sec?: number;
@@ -74,6 +75,11 @@ export default class ApiClient {
     });
 
     try {
+      console.log(`Sending transcription request to ${this.baseUrl}/transcribe/upload`, {
+        file: file.name,
+        size: file.size,
+        options
+      });
       const response = await axios.post(
         `${this.baseUrl}/transcribe/upload`,
         formData,
@@ -84,9 +90,14 @@ export default class ApiClient {
           timeout: 30000, // 30 seconds timeout
         }
       );
+      console.log('Transcription response received:', response.data);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Transcription failed:', error);
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+      }
       throw error;
     }
   }

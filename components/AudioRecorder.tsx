@@ -10,6 +10,7 @@ interface AudioRecorderProps {
   onTranscriptionEnd: () => void;
   onTranscriptionResult: (text: string) => void;
   isTranscribing: boolean;
+  model: string;
 }
 
 export default function AudioRecorder({
@@ -18,6 +19,7 @@ export default function AudioRecorder({
   onTranscriptionEnd,
   onTranscriptionResult,
   isTranscribing,
+  model,
 }: AudioRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
@@ -28,6 +30,9 @@ export default function AudioRecorder({
   const [deviceId, setDeviceId] = useState<string>("");
   const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
   const [sampleRate, setSampleRate] = useState<number>(16000);
+
+  // Disable translation for OmniLingual model
+  const isTranslationSupported = model !== "omni_lingual";
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -116,8 +121,9 @@ export default function AudioRecorder({
       const file = new File([recordedBlob], `recording_${Date.now()}.wav`, { type: 'audio/wav' });
 
       const options: TranscriptionOptions = {
-        task,
+        task: isTranslationSupported ? task : "transcribe", // Force transcribe for OmniLingual
         language: language || undefined,
+        model: model, // Pass the model from props
       };
 
       const result = await apiClient.transcribeUpload(file, options);
@@ -259,15 +265,17 @@ export default function AudioRecorder({
                 />
                 <span className="ml-2">Transcribe</span>
               </label>
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  checked={task === "translate"}
-                  onChange={() => setTask("translate")}
-                  className="text-primary-600 focus:ring-primary-500"
-                />
-                <span className="ml-2">Translate to English</span>
-              </label>
+              {isTranslationSupported && (
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    checked={task === "translate"}
+                    onChange={() => setTask("translate")}
+                    className="text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="ml-2">Translate to English</span>
+                </label>
+              )}
             </div>
           </div>
           <div>
@@ -280,13 +288,27 @@ export default function AudioRecorder({
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">Auto-detect</option>
-              <option value="en">English</option>
-              <option value="vi">Vietnamese</option>
-              <option value="hi">Hindi</option>
-              <option value="fr">French</option>
-              <option value="de">German</option>
-              <option value="es">Spanish</option>
-              <option value="zh">Chinese</option>
+              {model === "whisper_jax" ? (
+                <>
+                  <option value="en">English</option>
+                  <option value="vi">Vietnamese</option>
+                  <option value="hi">Hindi</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                  <option value="es">Spanish</option>
+                  <option value="zh">Chinese</option>
+                </>
+              ) : (
+                <>
+                  <option value="eng_Latn">English (Latin)</option>
+                  <option value="vie_Latn">Vietnamese (Latin)</option>
+                  <option value="hin_Deva">Hindi (Devanagari)</option>
+                  <option value="fra_Latn">French (Latin)</option>
+                  <option value="deu_Latn">German (Latin)</option>
+                  <option value="spa_Latn">Spanish (Latin)</option>
+                  <option value="cmn_Hans">Chinese (Simplified)</option>
+                </>
+              )}
             </select>
           </div>
         </div>

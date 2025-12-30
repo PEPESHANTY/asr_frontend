@@ -10,6 +10,7 @@ interface AudioUploadProps {
   onTranscriptionEnd: () => void;
   onTranscriptionResult: (text: string) => void;
   isTranscribing: boolean;
+  model: string;
 }
 
 export default function AudioUpload({
@@ -18,12 +19,16 @@ export default function AudioUpload({
   onTranscriptionEnd,
   onTranscriptionResult,
   isTranscribing,
+  model,
 }: AudioUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [task, setTask] = useState<"transcribe" | "translate">("transcribe");
   const [language, setLanguage] = useState<string>("");
   const [fileName, setFileName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Disable translation for OmniLingual model
+  const isTranslationSupported = model !== "omni_lingual";
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -47,11 +52,14 @@ export default function AudioUpload({
     onTranscriptionStart();
     try {
       const options: TranscriptionOptions = {
-        task,
+        task: isTranslationSupported ? task : "transcribe", // Force transcribe for OmniLingual
         language: language || undefined,
+        model: model, // Pass the model from props
       };
 
+      console.log('Starting transcription with options:', options);
       const result = await apiClient.transcribeUpload(selectedFile, options);
+      console.log('Transcription result received:', result);
       onTranscriptionResult(result.text);
     } catch (error) {
       console.error("Transcription error:", error);
@@ -133,15 +141,17 @@ export default function AudioUpload({
                 />
                 <span className="ml-2">Transcribe</span>
               </label>
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  checked={task === "translate"}
-                  onChange={() => setTask("translate")}
-                  className="text-primary-600 focus:ring-primary-500"
-                />
-                <span className="ml-2">Translate to English</span>
-              </label>
+              {isTranslationSupported && (
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    checked={task === "translate"}
+                    onChange={() => setTask("translate")}
+                    className="text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="ml-2">Translate to English</span>
+                </label>
+              )}
             </div>
           </div>
           <div>
@@ -154,13 +164,27 @@ export default function AudioUpload({
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">Auto-detect</option>
-              <option value="en">English</option>
-              <option value="vi">Vietnamese</option>
-              <option value="hi">Hindi</option>
-              <option value="fr">French</option>
-              <option value="de">German</option>
-              <option value="es">Spanish</option>
-              <option value="zh">Chinese</option>
+              {model === "whisper_jax" ? (
+                <>
+                  <option value="en">English</option>
+                  <option value="vi">Vietnamese</option>
+                  <option value="hi">Hindi</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                  <option value="es">Spanish</option>
+                  <option value="zh">Chinese</option>
+                </>
+              ) : (
+                <>
+                  <option value="eng_Latn">English (Latin)</option>
+                  <option value="vie_Latn">Vietnamese (Latin)</option>
+                  <option value="hin_Deva">Hindi (Devanagari)</option>
+                  <option value="fra_Latn">French (Latin)</option>
+                  <option value="deu_Latn">German (Latin)</option>
+                  <option value="spa_Latn">Spanish (Latin)</option>
+                  <option value="cmn_Hans">Chinese (Simplified)</option>
+                </>
+              )}
             </select>
           </div>
         </div>

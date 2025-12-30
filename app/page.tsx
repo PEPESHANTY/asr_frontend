@@ -12,10 +12,24 @@ export default function Home() {
   const [transcription, setTranscription] = useState<string>("");
   const [isTranscribing, setIsTranscribing] = useState<boolean>(false);
   const [apiEndpoint, setApiEndpoint] = useState<string>("http://127.0.0.1:8000");
+  const [model, setModel] = useState<string>("whisper_jax");
+  const [language, setLanguage] = useState<string>("en");
+  const [task, setTask] = useState<"transcribe" | "translate">("transcribe");
 
   const apiClient = new ApiClient(apiEndpoint);
 
+  const handleModelChange = (newModel: string) => {
+    setModel(newModel);
+    // Update language to appropriate default for the model
+    if (newModel === "omni_lingual") {
+      setLanguage("eng_Latn");
+    } else {
+      setLanguage("en");
+    }
+  };
+
   const handleTranscriptionResult = (text: string) => {
+    console.log('Transcription result received:', text);
     setTranscription(text);
   };
 
@@ -41,6 +55,12 @@ export default function Home() {
             <SettingsPanel 
               apiEndpoint={apiEndpoint}
               onApiEndpointChange={setApiEndpoint}
+              model={model}
+              onModelChange={handleModelChange}
+              language={language}
+              onLanguageChange={setLanguage}
+              task={task}
+              onTaskChange={setTask}
             />
           </div>
         </div>
@@ -89,6 +109,7 @@ export default function Home() {
                   onTranscriptionEnd={handleTranscriptionEnd}
                   onTranscriptionResult={handleTranscriptionResult}
                   isTranscribing={isTranscribing}
+                  model={model}
                 />
               ) : (
                 <AudioRecorder
@@ -97,6 +118,7 @@ export default function Home() {
                   onTranscriptionEnd={handleTranscriptionEnd}
                   onTranscriptionResult={handleTranscriptionResult}
                   isTranscribing={isTranscribing}
+                  model={model}
                 />
               )}
 
@@ -105,17 +127,7 @@ export default function Home() {
                 <div className="mt-8 border-t pt-8">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-800">Transcription Result</h3>
-                    <div className="flex space-x-2">
-                      <button
-                        className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 flex items-center space-x-2"
-                        onClick={() => {
-                          const audio = new Audio(`data:audio/wav;base64,${transcription}`);
-                          audio.play();
-                        }}
-                      >
-                        <Play className="w-4 h-4" />
-                        <span>Play</span>
-                      </button>
+                  <div className="flex space-x-2">
                       <button
                         className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center space-x-2"
                         onClick={() => {

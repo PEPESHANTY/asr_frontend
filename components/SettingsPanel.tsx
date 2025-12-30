@@ -1,18 +1,79 @@
 "use client";
 
-import { useState } from "react";
-import { Settings, Globe, Radio } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Settings, Globe, Radio, Cpu } from "lucide-react";
 
 interface SettingsPanelProps {
   apiEndpoint: string;
   onApiEndpointChange: (endpoint: string) => void;
+  model: string;
+  onModelChange: (model: string) => void;
+  language: string;
+  onLanguageChange: (language: string) => void;
+  task: "transcribe" | "translate";
+  onTaskChange: (task: "transcribe" | "translate") => void;
 }
 
-export default function SettingsPanel({ apiEndpoint, onApiEndpointChange }: SettingsPanelProps) {
+export default function SettingsPanel({ 
+  apiEndpoint, 
+  onApiEndpointChange,
+  model,
+  onModelChange,
+  language,
+  onLanguageChange,
+  task,
+  onTaskChange
+}: SettingsPanelProps) {
   const [whisperEndpoint, setWhisperEndpoint] = useState<string>("http://127.0.0.1:8008/transcribe");
   const [piperEndpoint, setPiperEndpoint] = useState<string>("http://127.0.0.1:8006/tts");
-  const [language, setLanguage] = useState<string>("en");
-  const [task, setTask] = useState<"transcribe" | "translate">("transcribe");
+
+  // Language options for different models
+  const whisperLanguages = [
+    { value: "en", label: "English" },
+    { value: "vi", label: "Vietnamese" },
+    { value: "hi", label: "Hindi" },
+    { value: "fr", label: "French" },
+    { value: "de", label: "German" },
+    { value: "es", label: "Spanish" },
+    { value: "zh", label: "Chinese" },
+    { value: "ja", label: "Japanese" },
+    { value: "ko", label: "Korean" },
+    { value: "ru", label: "Russian" },
+    { value: "ar", label: "Arabic" },
+  ];
+
+  const omniLingualLanguages = [
+    { value: "eng_Latn", label: "English (Latin)" },
+    { value: "vie_Latn", label: "Vietnamese (Latin)" },
+    { value: "hin_Deva", label: "Hindi (Devanagari)" },
+    { value: "fra_Latn", label: "French (Latin)" },
+    { value: "deu_Latn", label: "German (Latin)" },
+    { value: "spa_Latn", label: "Spanish (Latin)" },
+    { value: "cmn_Hans", label: "Chinese (Simplified)" },
+    { value: "cmn_Hant", label: "Chinese (Traditional)" },
+    { value: "jpn_Jpan", label: "Japanese (Japanese)" },
+    { value: "kor_Hang", label: "Korean (Hangul)" },
+    { value: "rus_Cyrl", label: "Russian (Cyrillic)" },
+    { value: "ara_Arab", label: "Arabic (Arabic)" },
+    { value: "ita_Latn", label: "Italian (Latin)" },
+    { value: "por_Latn", label: "Portuguese (Latin)" },
+  ];
+
+  // Model options
+  const modelOptions = [
+    { value: "whisper_jax", label: "Whisper JAX (TPU)" },
+    { value: "omni_lingual", label: "OmniLingual API (External)" },
+  ];
+
+  // Get current language options based on model
+  const getLanguageOptions = () => {
+    if (model === "whisper_jax") {
+      return whisperLanguages;
+    } else if (model === "omni_lingual") {
+      return omniLingualLanguages;
+    }
+    return whisperLanguages; // fallback
+  };
 
   const handleApiEndpointChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onApiEndpointChange(e.target.value);
@@ -26,8 +87,53 @@ export default function SettingsPanel({ apiEndpoint, onApiEndpointChange }: Sett
     setPiperEndpoint(e.target.value);
   };
 
+  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    onModelChange(e.target.value);
+    // Reset language to first option of new model
+    const newOptions = e.target.value === "whisper_jax" ? whisperLanguages : omniLingualLanguages;
+    if (newOptions.length > 0 && !newOptions.some(opt => opt.value === language)) {
+      onLanguageChange(newOptions[0].value);
+    }
+  };
+
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    onLanguageChange(e.target.value);
+  };
+
+  const handleTaskChange = (newTask: "transcribe" | "translate") => {
+    onTaskChange(newTask);
+  };
+
+  // Disable translation for OmniLingual models (they only support transcription)
+  const isTranslationSupported = model === "whisper_jax";
+
   return (
     <div className="space-y-6">
+      {/* Model Selection */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="flex items-center space-x-2">
+            <Cpu className="w-4 h-4" />
+            <span>ASR Model</span>
+          </div>
+        </label>
+        <select
+          value={model}
+          onChange={handleModelChange}
+          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        >
+          {modelOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-500 mt-1">
+          {model === "whisper_jax" && "Whisper JAX model running on TPU (supports transcription & translation)"}
+          {model === "omni_lingual" && "OmniLingual API model (external server, supports 1600+ languages)"}
+        </p>
+      </div>
+
       {/* API Endpoint */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -46,23 +152,25 @@ export default function SettingsPanel({ apiEndpoint, onApiEndpointChange }: Sett
         <p className="text-xs text-gray-500 mt-1">URL of the FastAPI ASR backend</p>
       </div>
 
-      {/* Whisper Endpoint */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          <div className="flex items-center space-x-2">
-            <Radio className="w-4 h-4" />
-            <span>Whisper JAX Endpoint</span>
-          </div>
-        </label>
-        <input
-          type="text"
-          value={whisperEndpoint}
-          onChange={handleWhisperEndpointChange}
-          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-          placeholder="http://127.0.0.1:8008/transcribe"
-        />
-        <p className="text-xs text-gray-500 mt-1">URL of the Whisper JAX TPU server</p>
-      </div>
+      {/* Whisper Endpoint (only show for whisper model) */}
+      {model === "whisper_jax" && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="flex items-center space-x-2">
+              <Radio className="w-4 h-4" />
+              <span>Whisper JAX Endpoint</span>
+            </div>
+          </label>
+          <input
+            type="text"
+            value={whisperEndpoint}
+            onChange={handleWhisperEndpointChange}
+            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            placeholder="http://127.0.0.1:8008/transcribe"
+          />
+          <p className="text-xs text-gray-500 mt-1">URL of the Whisper JAX TPU server</p>
+        </div>
+      )}
 
       {/* Piper TTS Endpoint */}
       <div>
@@ -87,52 +195,57 @@ export default function SettingsPanel({ apiEndpoint, onApiEndpointChange }: Sett
         <label className="block text-sm font-medium text-gray-700 mb-1">
           <div className="flex items-center space-x-2">
             <Globe className="w-4 h-4" />
-            <span>Default Language</span>
+            <span>Language</span>
           </div>
         </label>
         <select
           value={language}
-          onChange={(e) => setLanguage(e.target.value)}
+          onChange={handleLanguageChange}
           className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         >
-          <option value="en">English</option>
-          <option value="vi">Vietnamese</option>
-          <option value="hi">Hindi</option>
-          <option value="fr">French</option>
-          <option value="de">German</option>
-          <option value="es">Spanish</option>
-          <option value="zh">Chinese</option>
+          {getLanguageOptions().map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
         </select>
+        <p className="text-xs text-gray-500 mt-1">
+          {model === "whisper_jax" 
+            ? "Language code for Whisper (e.g., 'en' for English)" 
+            : "Language code with script for OmniLingual (e.g., 'eng_Latn' for English Latin)"}
+        </p>
       </div>
 
-      {/* Task Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Default Task
-        </label>
-        <div className="space-y-2">
-          <label className="flex items-center">
-            <input
-              type="radio"
-              value="transcribe"
-              checked={task === "transcribe"}
-              onChange={() => setTask("transcribe")}
-              className="text-primary-600 focus:ring-primary-500"
-            />
-            <span className="ml-2">Transcribe</span>
+      {/* Task Selection - only show for whisper model */}
+      {isTranslationSupported && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Default Task
           </label>
-          <label className="flex items-center">
-            <input
-              type="radio"
-              value="translate"
-              checked={task === "translate"}
-              onChange={() => setTask("translate")}
-              className="text-primary-600 focus:ring-primary-500"
-            />
-            <span className="ml-2">Translate to English</span>
-          </label>
+          <div className="space-y-2">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                value="transcribe"
+                checked={task === "transcribe"}
+                onChange={() => handleTaskChange("transcribe")}
+                className="text-primary-600 focus:ring-primary-500"
+              />
+              <span className="ml-2">Transcribe</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                value="translate"
+                checked={task === "translate"}
+                onChange={() => handleTaskChange("translate")}
+                className="text-primary-600 focus:ring-primary-500"
+              />
+              <span className="ml-2">Translate to English</span>
+            </label>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Advanced Settings */}
       <div className="pt-4 border-t">
@@ -171,6 +284,11 @@ export default function SettingsPanel({ apiEndpoint, onApiEndpointChange }: Sett
         <p className="text-sm text-blue-800">
           <strong>Note:</strong> These settings are stored in your browser's local storage. The actual API endpoints must be running on your server.
         </p>
+        {model.startsWith("omni_lingual") && (
+          <p className="text-sm text-blue-800 mt-1">
+            <strong>OmniLingual Note:</strong> Only supports transcription (not translation). For API version, ensure OMNILINGUAL_ENDPOINT and OMNILINGUAL_API_KEY are set in backend.
+          </p>
+        )}
       </div>
     </div>
   );
