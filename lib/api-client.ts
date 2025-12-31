@@ -1,4 +1,5 @@
 import axios from 'axios';
+import https from 'https';
 
 export interface TranscriptionOptions {
   task?: 'transcribe' | 'translate';
@@ -34,6 +35,11 @@ export default class ApiClient {
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
+    
+    // Configure axios to bypass SSL certificate verification (for testing only)
+    axios.defaults.httpsAgent = new https.Agent({  
+      rejectUnauthorized: false
+    });
   }
 
   async healthCheck(): Promise<boolean> {

@@ -11,7 +11,9 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"upload" | "record">("upload");
   const [transcription, setTranscription] = useState<string>("");
   const [isTranscribing, setIsTranscribing] = useState<boolean>(false);
-  const [apiEndpoint, setApiEndpoint] = useState<string>("https://asr-model-backend.pepeshanty.store");
+  const [apiEndpoint, setApiEndpoint] = useState<string>(
+    process.env.NEXT_PUBLIC_ASR_API_ENDPOINT || "https://asr-models-backend.pepeshanty.store"
+  );
   const [model, setModel] = useState<string>("whisper_jax");
   const [language, setLanguage] = useState<string>("en");
   const [task, setTask] = useState<"transcribe" | "translate">("transcribe");
@@ -163,7 +165,7 @@ export default function Home() {
               <div className="flex items-center space-x-4">
                 <div className={`w-3 h-3 rounded-full ${apiEndpoint ? "bg-green-500" : "bg-red-500"}`}></div>
                 <span className="text-gray-600">
-                  {apiEndpoint ? `Connected to ${apiEndpoint}` : "Not connected"}
+                  {apiEndpoint ? `nt}` : "Not connected"}
                 </span>
                 <button
                   className="ml-auto px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
