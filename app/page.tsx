@@ -165,7 +165,7 @@ export default function Home() {
               <div className="flex items-center space-x-4">
                 <div className={`w-3 h-3 rounded-full ${apiEndpoint ? "bg-green-500" : "bg-red-500"}`}></div>
                 <span className="text-gray-600">
-                  {apiEndpoint ? `nt}` : "Not connected"}
+                  {apiEndpoint ? `Backend API Connection check` : "Not connected"}
                 </span>
                 <button
                   className="ml-auto px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
