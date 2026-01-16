@@ -25,6 +25,8 @@ export default function Home() {
     // Update language to appropriate default for the model
     if (newModel === "omni_lingual") {
       setLanguage("eng_Latn");
+    } else if (newModel === "chunkformer") {
+      setLanguage("vi");
     } else {
       setLanguage("en");
     }

@@ -62,6 +62,7 @@ export default function SettingsPanel({
   const modelOptions = [
     { value: "whisper_jax", label: "Whisper JAX (TPU)" },
     { value: "omni_lingual", label: "OmniLingual API (External)" },
+    { value: "chunkformer", label: "Chunkformer Vietnamese ASR" },
   ];
 
   // Get current language options based on model
@@ -70,6 +71,8 @@ export default function SettingsPanel({
       return whisperLanguages;
     } else if (model === "omni_lingual") {
       return omniLingualLanguages;
+    } else if (model === "chunkformer") {
+      return [{ value: "vi", label: "Vietnamese" }];
     }
     return whisperLanguages; // fallback
   };
@@ -86,7 +89,12 @@ export default function SettingsPanel({
   const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onModelChange(e.target.value);
     // Reset language to first option of new model
-    const newOptions = e.target.value === "whisper_jax" ? whisperLanguages : omniLingualLanguages;
+    let newOptions = whisperLanguages;
+    if (e.target.value === "omni_lingual") {
+      newOptions = omniLingualLanguages;
+    } else if (e.target.value === "chunkformer") {
+      newOptions = [{ value: "vi", label: "Vietnamese" }];
+    }
     if (newOptions.length > 0 && !newOptions.some(opt => opt.value === language)) {
       onLanguageChange(newOptions[0].value);
     }
@@ -118,7 +126,7 @@ export default function SettingsPanel({
           onChange={handleModelChange}
           className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         >
-          {modelOptions.map((option) => (
+          {modelOptions.map((option) => ( 
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
@@ -126,7 +134,8 @@ export default function SettingsPanel({
         </select>
         <p className="text-xs text-gray-500 mt-1">
           {model === "whisper_jax" && "Whisper JAX model running on TPU (supports transcription & translation)"}
-          {model === "omni_lingual" && "OmniLingual API model (external server, supports 1600+ languages)"}
+          {model === "omni_lingual" && "OmniLingual API model (gpu server, supports 1600+ languages)"}
+          {model === "chunkformer" && "Chunkformer Vietnamese ASR model (gpu server, Vietnamese only)"}
         </p>
       </div>
 
