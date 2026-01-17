@@ -6,6 +6,7 @@ import ApiClient from "@/lib/api-client";
 import AudioUpload from "@/components/AudioUpload";
 import AudioRecorder from "@/components/AudioRecorder";
 import SettingsPanel from "@/components/SettingsPanel";
+import ModelComparison from "@/components/ModelComparison";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"upload" | "record">("upload");
@@ -17,6 +18,7 @@ export default function Home() {
   const [model, setModel] = useState<string>("whisper_jax");
   const [language, setLanguage] = useState<string>("en");
   const [task, setTask] = useState<"transcribe" | "translate">("transcribe");
+  const [comparisonResults, setComparisonResults] = useState<any[] | null>(null);
 
   const apiClient = new ApiClient(apiEndpoint);
 
@@ -35,6 +37,13 @@ export default function Home() {
   const handleTranscriptionResult = (text: string) => {
     console.log('Transcription result received:', text);
     setTranscription(text);
+    setComparisonResults(null); // Clear comparison when showing single result
+  };
+
+  const handleComparisonResults = (results: any[]) => {
+    console.log('Comparison results received:', results);
+    setComparisonResults(results);
+    setTranscription(''); // Clear single result when showing comparison
   };
 
   const handleTranscriptionStart = () => {
@@ -112,6 +121,7 @@ export default function Home() {
                   onTranscriptionStart={handleTranscriptionStart}
                   onTranscriptionEnd={handleTranscriptionEnd}
                   onTranscriptionResult={handleTranscriptionResult}
+                  onComparisonResults={handleComparisonResults}
                   isTranscribing={isTranscribing}
                   model={model}
                 />
@@ -121,13 +131,14 @@ export default function Home() {
                   onTranscriptionStart={handleTranscriptionStart}
                   onTranscriptionEnd={handleTranscriptionEnd}
                   onTranscriptionResult={handleTranscriptionResult}
+                  onComparisonResults={handleComparisonResults}
                   isTranscribing={isTranscribing}
                   model={model}
                 />
               )}
 
-              {/* Transcription Result */}
-              {transcription && (
+              {/* Single Transcription Result */}
+              {transcription && !comparisonResults && (
                 <div className="mt-8 border-t pt-8">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-800">Transcription Result</h3>
@@ -156,6 +167,11 @@ export default function Home() {
                     />
                   </div>
                 </div>
+              )}
+
+              {/* Comparison Results */}
+              {comparisonResults && (
+                <ModelComparison results={comparisonResults} />
               )}
             </div>
           </div>

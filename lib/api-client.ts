@@ -146,4 +146,40 @@ export default class ApiClient {
     }
   }
 
+  async transcribeAllModels(
+    file: File,
+    options: Omit<TranscriptionOptions, 'model'> = {}
+  ): Promise<Array<{ model: string; result: TranscriptionResult | null; error?: string; duration: number }>> {
+    const models = ['whisper_jax', 'omni_lingual', 'chunkformer'];
+    
+    console.log('Starting multi-model comparison for:', file.name);
+    
+    const promises = models.map(async (model) => {
+      const startTime = Date.now();
+      try {
+        const result = await this.transcribeUpload(file, { ...options, model });
+        const duration = Date.now() - startTime;
+        console.log(`${model} completed in ${duration}ms`);
+        return {
+          model,
+          result,
+          error: undefined,
+          duration
+        };
+      } catch (error: any) {
+        const duration = Date.now() - startTime;
+        const errorMessage = error.response?.data?.detail || error.message || 'Unknown error';
+        console.error(`${model} failed:`, errorMessage);
+        return {
+          model,
+          result: null,
+          error: errorMessage,
+          duration
+        };
+      }
+    });
+
+    return Promise.all(promises);
+  }
+
 }

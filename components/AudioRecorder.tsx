@@ -9,6 +9,7 @@ interface AudioRecorderProps {
   onTranscriptionStart: () => void;
   onTranscriptionEnd: () => void;
   onTranscriptionResult: (text: string) => void;
+  onComparisonResults?: (results: any[]) => void;
   isTranscribing: boolean;
   model: string;
 }
@@ -18,6 +19,7 @@ export default function AudioRecorder({
   onTranscriptionStart,
   onTranscriptionEnd,
   onTranscriptionResult,
+  onComparisonResults,
   isTranscribing,
   model,
 }: AudioRecorderProps) {
@@ -131,6 +133,31 @@ export default function AudioRecorder({
     } catch (error) {
       console.error("Transcription error:", error);
       alert("Transcription failed. Please check the console for details.");
+    } finally {
+      onTranscriptionEnd();
+    }
+  };
+
+  const handleCompareModels = async () => {
+    if (!recordedBlob || !onComparisonResults) return;
+
+    onTranscriptionStart();
+    try {
+      // Convert blob to File
+      const file = new File([recordedBlob], `recording_${Date.now()}.wav`, { type: 'audio/wav' });
+
+      const options: TranscriptionOptions = {
+        task: "transcribe", // Always use transcribe for comparison
+        language: language || undefined,
+      };
+
+      console.log('Starting multi-model comparison with options:', options);
+      const results = await apiClient.transcribeAllModels(file, options);
+      console.log('Comparison results received:', results);
+      onComparisonResults(results);
+    } catch (error) {
+      console.error("Comparison error:", error);
+      alert("Comparison failed. Please check the console for details.");
     } finally {
       onTranscriptionEnd();
     }
@@ -314,28 +341,54 @@ export default function AudioRecorder({
         </div>
       </div>
 
-      {/* Transcribe button */}
-      <button
-        onClick={handleTranscribe}
-        disabled={!recordedBlob || isTranscribing}
-        className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2 ${
-          recordedBlob && !isTranscribing
-            ? "bg-primary-600 text-white hover:bg-primary-700"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-        }`}
-      >
-        {isTranscribing ? (
-          <>
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>Transcribing...</span>
-          </>
-        ) : (
-          <>
-            <Mic className="w-5 h-5" />
-            <span>Transcribe Recording</span>
-          </>
+      {/* Action buttons */}
+      <div className="space-y-3">
+        <button
+          onClick={handleTranscribe}
+          disabled={!recordedBlob || isTranscribing}
+          className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2 ${
+            recordedBlob && !isTranscribing
+              ? "bg-primary-600 text-white hover:bg-primary-700"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
+        >
+          {isTranscribing ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Processing...</span>
+            </>
+          ) : (
+            <>
+              <Mic className="w-5 h-5" />
+              <span>Transcribe with {model === "whisper_jax" ? "Whisper" : model === "omni_lingual" ? "OmniLingual" : "Chunkformer"}</span>
+            </>
+          )}
+        </button>
+
+        {onComparisonResults && (
+          <button
+            onClick={handleCompareModels}
+            disabled={!recordedBlob || isTranscribing}
+            className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2 ${
+              recordedBlob && !isTranscribing
+                ? "bg-purple-600 text-white hover:bg-purple-700"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            {isTranscribing ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <Mic className="w-5 h-5" />
+                <span>Compare All Models</span>
+              </>
+            )}
+          </button>
         )}
-      </button>
+      </div>
     </div>
   );
 }
