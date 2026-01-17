@@ -112,7 +112,7 @@ export default function SettingsPanel({
   const isTranslationSupported = model === "whisper_jax";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Model Selection */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -133,9 +133,9 @@ export default function SettingsPanel({
           ))}
         </select>
         <p className="text-xs text-gray-500 mt-1">
-          {model === "whisper_jax" && "Whisper JAX model running on TPU (supports transcription & translation)"}
-          {model === "omni_lingual" && "OmniLingual API model (gpu server, supports 1600+ languages)"}
-          {model === "chunkformer" && "Chunkformer Vietnamese ASR model (gpu server, Vietnamese only)"}
+          {model === "whisper_jax" && "TPU-based, supports transcription & translation"}
+          {model === "omni_lingual" && "GPU server, 1600+ languages"}
+          {model === "chunkformer" && "GPU server, Vietnamese only"}
         </p>
       </div>
 
@@ -154,54 +154,6 @@ export default function SettingsPanel({
           className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           placeholder="http://127.0.0.1:8000"
         />
-        <p className="text-xs text-gray-500 mt-1">URL of the FastAPI ASR backend</p>
-      </div>
-
-      {/* Whisper Endpoint (only show for whisper model) */}
-      {model === "whisper_jax" && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            <div className="flex items-center space-x-2">
-              <Radio className="w-4 h-4" />
-              <span>Whisper JAX Endpoint</span>
-            </div>
-          </label>
-          <input
-            type="text"
-            value={whisperEndpoint}
-            onChange={handleWhisperEndpointChange}
-            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            placeholder="http://127.0.0.1:8008/transcribe"
-          />
-          <p className="text-xs text-gray-500 mt-1">URL of the Whisper JAX TPU server</p>
-        </div>
-      )}
-
-
-      {/* Language Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          <div className="flex items-center space-x-2">
-            <Globe className="w-4 h-4" />
-            <span>Language</span>
-          </div>
-        </label>
-        <select
-          value={language}
-          onChange={handleLanguageChange}
-          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-        >
-          {getLanguageOptions().map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <p className="text-xs text-gray-500 mt-1">
-          {model === "whisper_jax" 
-            ? "Language code for Whisper (e.g., 'en' for English)" 
-            : "Language code with script for OmniLingual (e.g., 'eng_Latn' for English Latin)"}
-        </p>
       </div>
 
       {/* Task Selection - only show for whisper model */}
@@ -235,46 +187,14 @@ export default function SettingsPanel({
         </div>
       )}
 
-      {/* Advanced Settings */}
-      <div className="pt-4 border-t">
-        <h4 className="font-bold text-gray-800 mb-2">Advanced Settings</h4>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Number of Beams (0 for default)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="10"
-              defaultValue="0"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Temperature (0 for default)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="2"
-              step="0.1"
-              defaultValue="0"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Environment Note */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-        <p className="text-sm text-blue-800">
-          <strong>Note:</strong> These settings are stored in your browser's local storage. The actual API endpoints must be running on your server.
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
+        <p className="text-xs text-blue-800">
+          <strong>Note:</strong> Settings stored in browser. API endpoints must be running on your server.
         </p>
-        {model.startsWith("omni_lingual") && (
-          <p className="text-sm text-blue-800 mt-1">
-            <strong>OmniLingual Note:</strong> Only supports transcription (not translation). For API version, ensure OMNILINGUAL_ENDPOINT and OMNILINGUAL_API_KEY are set in backend.
+        {model === "omni_lingual" && (
+          <p className="text-xs text-blue-800 mt-1">
+            Only supports transcription, not translation.
           </p>
         )}
       </div>
