@@ -31,6 +31,7 @@ export default function AudioRecorder({
   const [language, setLanguage] = useState<string>("");
   const [deviceId, setDeviceId] = useState<string>("");
   const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
+  const [recordedMimeType, setRecordedMimeType] = useState<string>('audio/webm');
   const [sampleRate, setSampleRate] = useState<number>(16000);
 
   // Disable translation for OmniLingual model
@@ -69,9 +70,20 @@ export default function AudioRecorder({
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
-      const mediaRecorder = new MediaRecorder(stream);
+      // Determine best supported MIME type
+      let mimeType = 'audio/webm';
+      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+        mimeType = 'audio/webm;codecs=opus';
+      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        mimeType = 'audio/mp4';
+      } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+        mimeType = 'audio/webm';
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
+      setRecordedMimeType(mimeType);
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -80,7 +92,9 @@ export default function AudioRecorder({
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/wav' });
+        // Use the actual MIME type from the recorder
+        const actualMimeType = mediaRecorderRef.current?.mimeType || mimeType;
+        const blob = new Blob(chunksRef.current, { type: actualMimeType });
         setRecordedBlob(blob);
         const url = URL.createObjectURL(blob);
         setRecordedUrl(url);
@@ -119,8 +133,10 @@ export default function AudioRecorder({
 
     onTranscriptionStart();
     try {
-      // Convert blob to File
-      const file = new File([recordedBlob], `recording_${Date.now()}.wav`, { type: 'audio/wav' });
+      // Convert blob to File with correct extension
+      const extension = recordedMimeType.includes('webm') ? 'webm' : 
+                       recordedMimeType.includes('mp4') ? 'mp4' : 'wav';
+      const file = new File([recordedBlob], `recording_${Date.now()}.${extension}`, { type: recordedBlob.type });
 
       const options: TranscriptionOptions = {
         task: isTranslationSupported ? task : "transcribe", // Force transcribe for OmniLingual
@@ -143,8 +159,10 @@ export default function AudioRecorder({
 
     onTranscriptionStart();
     try {
-      // Convert blob to File
-      const file = new File([recordedBlob], `recording_${Date.now()}.wav`, { type: 'audio/wav' });
+      // Convert blob to File with correct extension
+      const extension = recordedMimeType.includes('webm') ? 'webm' : 
+                       recordedMimeType.includes('mp4') ? 'mp4' : 'wav';
+      const file = new File([recordedBlob], `recording_${Date.now()}.${extension}`, { type: recordedBlob.type });
 
       const options: TranscriptionOptions = {
         task: "transcribe", // Always use transcribe for comparison
