@@ -110,9 +110,11 @@ export default function ModelComparison({ results }: ModelComparisonProps) {
             </span>
           </div>
           <div>
-            <span className="text-gray-600">Total Time: </span>
+            <span className="text-gray-600">Slowest: </span>
             <span className="font-bold text-purple-600">
-              {(Math.max(...results.map(r => r.duration)) / 1000).toFixed(2)}s
+              {results.length > 0 && 
+                MODEL_LABELS[results.reduce((max, r) => r.duration > max.duration ? r : max).model]
+              } ({(Math.max(...results.map(r => r.duration)) / 1000).toFixed(2)}s)
             </span>
           </div>
         </div>
