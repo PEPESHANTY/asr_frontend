@@ -26,7 +26,6 @@ export default function AudioRecorder({
   const [isRecording, setIsRecording] = useState(false);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
-  const [recordSeconds, setRecordSeconds] = useState<number>(8);
   const [task, setTask] = useState<"transcribe" | "translate">("transcribe");
   const [language, setLanguage] = useState<string>("");
   const [deviceId, setDeviceId] = useState<string>("");
@@ -102,13 +101,6 @@ export default function AudioRecorder({
 
       mediaRecorder.start();
       setIsRecording(true);
-
-      // Auto-stop after specified seconds
-      setTimeout(() => {
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-          stopRecording();
-        }
-      }, recordSeconds * 1000);
 
     } catch (error) {
       console.error("Error starting recording:", error);
@@ -200,23 +192,7 @@ export default function AudioRecorder({
 
       {/* Recording controls */}
       <div className="bg-gray-50 rounded-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Recording Duration (seconds)
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="60"
-              value={recordSeconds}
-              onChange={(e) => setRecordSeconds(parseInt(e.target.value))}
-              className="w-full"
-            />
-            <div className="text-center text-gray-600 mt-1">
-              {recordSeconds} seconds
-            </div>
-          </div>
+        <div className="grid grid-cols-1 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Sample Rate
