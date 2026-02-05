@@ -63,13 +63,16 @@ export default function SettingsPanel({
     { value: "whisper_jax", label: "Whisper JAX (TPU)" },
     { value: "omni_lingual", label: "OmniLingual API (External)" },
     { value: "chunkformer", label: "Chunkformer Vietnamese ASR" },
+    { value: "qwen3", label: "Qwen3 ASR (Local)" },
+    { value: "qwen3_1_7B", label: "Qwen3 1.7B ASR" },
+    { value: "qwen3_0_6B", label: "Qwen3 0.6B ASR" },
   ];
 
   // Get current language options based on model
   const getLanguageOptions = () => {
     if (model === "whisper_jax") {
       return whisperLanguages;
-    } else if (model === "omni_lingual") {
+    } else if (model === "omni_lingual" || model === "qwen3" || model === "qwen3_1_7B" || model === "qwen3_0_6B") {
       return omniLingualLanguages;
     } else if (model === "chunkformer") {
       return [{ value: "vi", label: "Vietnamese" }];
@@ -90,7 +93,7 @@ export default function SettingsPanel({
     onModelChange(e.target.value);
     // Reset language to first option of new model
     let newOptions = whisperLanguages;
-    if (e.target.value === "omni_lingual") {
+    if (e.target.value === "omni_lingual" || e.target.value === "qwen3" || e.target.value === "qwen3_1_7B" || e.target.value === "qwen3_0_6B") {
       newOptions = omniLingualLanguages;
     } else if (e.target.value === "chunkformer") {
       newOptions = [{ value: "vi", label: "Vietnamese" }];
@@ -136,6 +139,9 @@ export default function SettingsPanel({
           {model === "whisper_jax" && "TPU-based, supports transcription & translation"}
           {model === "omni_lingual" && "GPU server, 1600+ languages"}
           {model === "chunkformer" && "GPU server, Vietnamese only"}
+          {model === "qwen3" && "Qwen3 ASR, multilingual"}
+          {model === "qwen3_1_7B" && "Qwen3 1.7B, multilingual on hanoi2"}
+          {model === "qwen3_0_6B" && "Qwen3 0.6B, multilingual on hanoi2"}
         </p>
       </div>
 
@@ -192,7 +198,7 @@ export default function SettingsPanel({
         <p className="text-xs text-blue-800">
           <strong>Note:</strong> Settings stored in browser. API endpoints must be running on your server.
         </p>
-        {model === "omni_lingual" && (
+        {(model === "omni_lingual" || model === "qwen3" || model === "qwen3_1_7B" || model === "qwen3_0_6B") && (
           <p className="text-xs text-blue-800 mt-1">
             Only supports transcription, not translation.
           </p>

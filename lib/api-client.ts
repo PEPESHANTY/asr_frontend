@@ -150,7 +150,7 @@ export default class ApiClient {
     file: File,
     options: Omit<TranscriptionOptions, 'model'> = {}
   ): Promise<Array<{ model: string; result: TranscriptionResult | null; error?: string; duration: number }>> {
-    const models = ['whisper_jax', 'omni_lingual', 'chunkformer'];
+    const models = ['whisper_jax', 'omni_lingual', 'chunkformer', 'qwen3', 'qwen3_1_7B', 'qwen3_0_6B'];
     
     console.log('Starting multi-model comparison for:', file.name);
     
