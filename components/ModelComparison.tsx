@@ -17,7 +17,6 @@ const MODEL_LABELS: Record<string, string> = {
   whisper_jax: "Whisper JAX",
   omni_lingual: "OmniLingual",
   chunkformer: "Chunkformer",
-  qwen3: "Qwen3",
   qwen3_1_7B: "Qwen3 1.7B",
   qwen3_0_6B: "Qwen3 0.6B"
 };
@@ -26,7 +25,6 @@ const MODEL_COLORS: Record<string, string> = {
   whisper_jax: "border-blue-300 bg-blue-50",
   omni_lingual: "border-green-300 bg-green-50",
   chunkformer: "border-purple-300 bg-purple-50",
-  qwen3: "border-orange-300 bg-orange-50",
   qwen3_1_7B: "border-pink-300 bg-pink-50",
   qwen3_0_6B: "border-teal-300 bg-teal-50"
 };

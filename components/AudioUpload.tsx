@@ -29,8 +29,17 @@ export default function AudioUpload({
   const [fileName, setFileName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Disable translation for OmniLingual model
-  const isTranslationSupported = model !== "omni_lingual";
+  // Translation is only supported by Whisper JAX
+  const isTranslationSupported = model === "whisper_jax";
+
+  const getModelLabel = () => {
+    if (model === "whisper_jax") return "Whisper";
+    if (model === "omni_lingual") return "OmniLingual";
+    if (model === "chunkformer") return "Chunkformer";
+    if (model === "qwen3_1_7B") return "Qwen3 1.7B";
+    if (model === "qwen3_0_6B") return "Qwen3 0.6B";
+    return model;
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -233,7 +242,7 @@ export default function AudioUpload({
           ) : (
             <>
               <Upload className="w-5 h-5" />
-              <span>Transcribe with {model === "whisper_jax" ? "Whisper" : model === "omni_lingual" ? "OmniLingual" : "Chunkformer"}</span>
+              <span>Transcribe with {getModelLabel()}</span>
             </>
           )}
         </button>

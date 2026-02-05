@@ -13,7 +13,7 @@ export default function Home() {
   const [transcription, setTranscription] = useState<string>("");
   const [isTranscribing, setIsTranscribing] = useState<boolean>(false);
   const [apiEndpoint, setApiEndpoint] = useState<string>(
-    process.env.NEXT_PUBLIC_ASR_API_ENDPOINT || "https://asr-models-backend.pepeshanty.store"
+    process.env.NEXT_PUBLIC_ASR_API_ENDPOINT || "https://asr-models.backend4.pe"
   );
   const [model, setModel] = useState<string>("whisper_jax");
   const [language, setLanguage] = useState<string>("en");

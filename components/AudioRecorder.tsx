@@ -33,8 +33,17 @@ export default function AudioRecorder({
   const [recordedMimeType, setRecordedMimeType] = useState<string>('audio/webm');
   const [sampleRate, setSampleRate] = useState<number>(16000);
 
-  // Disable translation for OmniLingual model
-  const isTranslationSupported = model !== "omni_lingual";
+  // Translation is only supported by Whisper JAX
+  const isTranslationSupported = model === "whisper_jax";
+
+  const getModelLabel = () => {
+    if (model === "whisper_jax") return "Whisper";
+    if (model === "omni_lingual") return "OmniLingual";
+    if (model === "chunkformer") return "Chunkformer";
+    if (model === "qwen3_1_7B") return "Qwen3 1.7B";
+    if (model === "qwen3_0_6B") return "Qwen3 0.6B";
+    return model;
+  };
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -354,7 +363,7 @@ export default function AudioRecorder({
           ) : (
             <>
               <Mic className="w-5 h-5" />
-              <span>Transcribe with {model === "whisper_jax" ? "Whisper" : model === "omni_lingual" ? "OmniLingual" : "Chunkformer"}</span>
+              <span>Transcribe with {getModelLabel()}</span>
             </>
           )}
         </button>
