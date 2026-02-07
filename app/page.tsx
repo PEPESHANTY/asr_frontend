@@ -27,6 +27,8 @@ export default function Home() {
     // Update language to appropriate default for the model
     if (newModel === "omni_lingual") {
       setLanguage("eng_Latn");
+    } else if (newModel === "qwen3_1_7B" || newModel === "qwen3_0_6B") {
+      setLanguage("eng_Latn");
     } else if (newModel === "chunkformer") {
       setLanguage("vi");
     } else {
